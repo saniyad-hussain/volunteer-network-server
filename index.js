@@ -5,6 +5,7 @@ const bodyParser = require('body-parser');
 const cors = require('cors');
 const { ObjectID } = require('mongodb');
 const env = require('dotenv').config();
+const fileUpload = require('express-fileupload');
 app.use(bodyParser.json());
 app.use(cors());
 var admin = require('firebase-admin');
@@ -21,6 +22,7 @@ const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster
 const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true });
 client.connect((err) => {
 	const collection = client.db('volunteerNetwork').collection('volunteers');
+	const eventsCollection = client.db('volunteerNetwork').collection('events');
 
 	app.post('/registered', (req, res) => {
 		const newRegistration = req.body;
@@ -57,6 +59,18 @@ client.connect((err) => {
 		collection.deleteOne({ _id: ObjectID(req.params.id) }).then((result) => {
 			console.log(result);
 		});
+	});
+
+	app.get('/dashboard', (req, res) => {
+		collection.find({}).toArray((err, documents) => {
+			res.send(documents);
+		});
+	});
+
+	app.post('/addevent', (req, res) => {
+		if (req.files === null) {
+			return res.status(400).json({ msg: 'No File Uploaded' });
+		}
 	});
 });
 
