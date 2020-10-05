@@ -57,7 +57,7 @@ client.connect((err) => {
 	});
 	app.delete('/cancel/:id', (req, res) => {
 		collection.deleteOne({ _id: ObjectID(req.params.id) }).then((result) => {
-			console.log(result);
+			res.send(result.deletedCount > 0);
 		});
 	});
 
@@ -68,16 +68,19 @@ client.connect((err) => {
 	});
 
 	app.post('/addevent', (req, res) => {
-		if (req.files === null) {
-			return res.status(400).json({ msg: 'No File Uploaded' });
-		}
+		const newEvents = req.body;
+		eventsCollection.insertOne(newEvents).toArray((err, documents) => {
+			res.send(documents);
+		});
+	});
+
+	app.get('/events', (req, res) => {
+		eventsCollection.find({}).toArray((err, documents) => {
+			res.send(documents);
+		});
 	});
 });
 
-app.get('/', (req, res) => {
-	res.send('Hello World!');
-});
-
 app.listen(port, () => {
-	console.log(`Example app listening at http://localhost:${port}`);
+	console.log(`Running`);
 });
